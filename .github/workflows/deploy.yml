@@ -29,6 +29,7 @@ jobs:
           KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
           KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
           KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: ./gradlew clean build -x test
 
       - name: Check build result
@@ -53,12 +54,13 @@ jobs:
           KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
           KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
           KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           port: ${{ secrets.EC2_PORT }}
-          envs: DB_PASSWORD,JWT_SECRET,KAKAO_CLIENT_ID,KAKAO_CLIENT_SECRET,KAKAO_REDIRECT_URI
+          envs: DB_PASSWORD,JWT_SECRET,KAKAO_CLIENT_ID,KAKAO_CLIENT_SECRET,KAKAO_REDIRECT_URI,GEMINI_API_KEY
           script: |
             echo "=== 디버깅: 파일 위치 확인 ==="
             ls -al /home/ubuntu/app/app.jar
@@ -88,6 +90,7 @@ jobs:
             KAKAO_CLIENT_ID=$KAKAO_CLIENT_ID \
             KAKAO_CLIENT_SECRET=$KAKAO_CLIENT_SECRET \
             KAKAO_REDIRECT_URI=$KAKAO_REDIRECT_URI \
+            GEMINI_API_KEY=$GEMINI_API_KEY \
             nohup java -jar /home/ubuntu/app/app.jar >> /home/ubuntu/logs/output.log 2>&1 &
 
             sleep 5 # 실행 대기 시간 조금 더 넉넉하게
