@@ -65,7 +65,7 @@ public class KakaoOAuthService {
                     .bodyToMono(KakaoUserInfo.class)
                     .block();
 
-            log.info("Successfully obtained Kakao user info for kakaoId: {}", userInfo.getId());
+            log.info("Successfully obtained Kakao user info for kakaoId: {}", userInfo.id());
             return userInfo;
         } catch (Exception e) {
             log.error("Failed to get Kakao user info: {}", e.getMessage(), e);

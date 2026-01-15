@@ -34,7 +34,7 @@ public class AuthService {
         KakaoTokenResponse kakaoToken = kakaoOAuthService.getAccessToken(authorizationCode);
 
         // 2. 카카오 액세스 토큰으로 사용자 정보 조회
-        KakaoUserInfo kakaoUserInfo = kakaoOAuthService.getUserInfo(kakaoToken.getAccessToken());
+        KakaoUserInfo kakaoUserInfo = kakaoOAuthService.getUserInfo(kakaoToken.accessToken());
 
         // 3. 사용자 조회 또는 생성
         User user = userRepository.findByKakaoId(kakaoUserInfo.getKakaoIdAsString())
@@ -46,7 +46,7 @@ public class AuthService {
         JwtToken jwtToken = generateJwtToken(user);
 
         // 5. Refresh Token 저장
-        user.updateRefreshToken(jwtToken.getRefreshToken());
+        user.updateRefreshToken(jwtToken.refreshToken());
         userRepository.save(user);
 
         log.info("User logged in successfully. userId: {}, isNewUser: {}", user.getId(), isNewUser);
@@ -80,7 +80,7 @@ public class AuthService {
         JwtToken newJwtToken = generateJwtToken(user);
 
         // 4. 새로운 Refresh Token 저장
-        user.updateRefreshToken(newJwtToken.getRefreshToken());
+        user.updateRefreshToken(newJwtToken.refreshToken());
         userRepository.save(user);
 
         log.info("Token refreshed successfully. userId: {}", user.getId());

@@ -25,6 +25,10 @@ jobs:
       - name: Build with Gradle
         env:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
         run: ./gradlew clean build -x test
 
       - name: Check build result
@@ -45,12 +49,16 @@ jobs:
         uses: appleboy/ssh-action@master
         env:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           port: ${{ secrets.EC2_PORT }}
-          envs: DB_PASSWORD
+          envs: DB_PASSWORD,JWT_SECRET,KAKAO_CLIENT_ID,KAKAO_CLIENT_SECRET,KAKAO_REDIRECT_URI
           script: |
             echo "=== 디버깅: 파일 위치 확인 ==="
             ls -al /home/ubuntu/app/app.jar
@@ -75,7 +83,12 @@ jobs:
             fi
 
             echo "Starting the new application..."
-            DB_PASSWORD=$DB_PASSWORD nohup java -jar /home/ubuntu/app/app.jar >> /home/ubuntu/logs/output.log 2>&1 &
+            DB_PASSWORD=$DB_PASSWORD \
+            JWT_SECRET=$JWT_SECRET \
+            KAKAO_CLIENT_ID=$KAKAO_CLIENT_ID \
+            KAKAO_CLIENT_SECRET=$KAKAO_CLIENT_SECRET \
+            KAKAO_REDIRECT_URI=$KAKAO_REDIRECT_URI \
+            nohup java -jar /home/ubuntu/app/app.jar >> /home/ubuntu/logs/output.log 2>&1 &
 
             sleep 5 # 실행 대기 시간 조금 더 넉넉하게
             if ps -ef | grep -v grep | grep "app.jar" > /dev/null

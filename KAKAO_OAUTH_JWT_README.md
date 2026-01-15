@@ -164,6 +164,8 @@ src/main/java/com/example/spring/
 │       └── UserRepository.java         # 사용자 Repository
 │
 ├── auth/                               # 인증 도메인
+│   ├── controller/
+│   │   └── AuthController.java         # 인증 API 컨트롤러
 │   ├── service/
 │   │   └── AuthService.java            # 인증 서비스
 │   ├── dto/
@@ -189,7 +191,10 @@ src/main/java/com/example/spring/
 ├── common/                             # 공통 모듈
 │   ├── config/
 │   │   └── WebClientConfig.java        # WebClient 설정
+│   ├── dto/
+│   │   └── ApiResponse.java            # 공통 API 응답 포맷 (record)
 │   └── exception/
+│       ├── GlobalExceptionHandler.java # 전역 예외 처리
 │       ├── UserNotFoundException.java  # 사용자 없음 예외
 │       └── InvalidTokenException.java  # 유효하지 않은 토큰 예외
 │
@@ -202,20 +207,90 @@ src/main/java/com/example/spring/
 - 패키지 간 의존성이 명확함
 - 확장성이 뛰어남 (새 도메인 추가 시 새 패키지만 생성)
 
+## API 엔드포인트
+
+### AuthController
+
+모든 응답은 `ApiResponse<T>` 포맷으로 반환됩니다:
+```json
+{
+  "success": true,
+  "data": { ... },
+  "message": "성공 메시지",
+  "error": null
+}
+```
+
+#### 1. 카카오 로그인
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "code": "KAKAO_AUTHORIZATION_CODE",
+  "role": "CHILD" or "PARENT"
+}
+```
+
+**응답**
+```json
+{
+  "success": true,
+  "data": {
+    "userId": 1,
+    "email": "user@example.com",
+    "nickname": "홍길동",
+    "profileImageUrl": "https://...",
+    "role": "CHILD",
+    "token": {
+      "accessToken": "eyJhbG...",
+      "refreshToken": "eyJhbG...",
+      "tokenType": "Bearer",
+      "expiresIn": 3600000
+    },
+    "isNewUser": true
+  },
+  "message": "회원가입 및 로그인 성공"
+}
+```
+
+#### 2. 토큰 갱신
+```http
+POST /api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "eyJhbG..."
+}
+```
+
+#### 3. 로그아웃
+```http
+POST /api/auth/logout/{userId}
+Authorization: Bearer {ACCESS_TOKEN}
+```
+
+#### 4. 현재 사용자 정보 조회
+```http
+GET /api/auth/me/{userId}
+Authorization: Bearer {ACCESS_TOKEN}
+```
+
+### 에러 처리
+
+`GlobalExceptionHandler`가 모든 예외를 처리합니다:
+- `UserNotFoundException` → 404
+- `InvalidTokenException` → 401
+- `MethodArgumentNotValidException` → 400
+- `RuntimeException` → 500
+
 ## 다음 단계
 
-### 컨트롤러 구현 (프론트엔드 확정 후)
-프론트엔드 API 스펙이 확정되면 다음 컨트롤러를 구현해야 합니다:
-
-1. **AuthController**
-   - `POST /api/auth/login` - 카카오 로그인
-   - `POST /api/auth/refresh` - 토큰 갱신
-   - `POST /api/auth/logout` - 로그아웃
-   - `GET /api/auth/me` - 현재 사용자 정보 조회
-
-2. **JWT 필터 추가** (선택사항)
-   - JwtAuthenticationFilter: 요청에서 JWT 추출 및 검증
-   - JwtAuthenticationEntryPoint: 인증 실패 처리
+### JWT 필터 추가 (선택사항)
+현재는 userId를 URL 파라미터로 전달하지만, JWT 필터를 추가하면:
+- JwtAuthenticationFilter: 요청에서 JWT 추출 및 검증
+- JwtAuthenticationEntryPoint: 인증 실패 처리
+- SecurityContext에서 userId 자동 추출 가능
 
 ### 환경 설정
 
