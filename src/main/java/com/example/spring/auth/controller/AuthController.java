@@ -25,8 +25,9 @@ public class AuthController {
     /**
      * 카카오 로그인
      * POST /api/auth/login
+     * POST /api/auth/kakao/login (alias)
      */
-    @PostMapping("/login")
+    @PostMapping({"/login", "/kakao/login"})
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
         log.info("Login request received. role: {}", request.role());
 
