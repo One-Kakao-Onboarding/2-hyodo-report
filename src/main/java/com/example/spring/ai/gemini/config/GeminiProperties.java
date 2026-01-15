@@ -19,6 +19,7 @@ public class GeminiProperties {
      */
     private String apiKey;
 
+
     /**
      * 사용할 Gemini 모델 (기본: gemini-1.5-flash)
      */
