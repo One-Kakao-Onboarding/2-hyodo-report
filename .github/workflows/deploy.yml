@@ -27,6 +27,8 @@ jobs:
 
       # 4. 프로젝트 빌드 (테스트 제외)
       - name: Build with Gradle
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: ./gradlew clean build -x test
 
       # 빌드 결과물 확인 (디버깅용)
@@ -48,11 +50,14 @@ jobs:
       # 6. EC2에 접속해서 앱 재시작 (SSH)
       - name: Restart Spring Boot App
         uses: appleboy/ssh-action@master
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           port: ${{ secrets.EC2_PORT }}
+          envs: DB_PASSWORD
           script: |
             # 1. 필수 폴더 생성 (-p 옵션으로 이미 존재해도 에러 발생 안 함)
             mkdir -p /home/ubuntu/app /home/ubuntu/logs
@@ -80,7 +85,7 @@ jobs:
             # 3. 새 버전 앱 실행
             echo "Starting the new application..."
             # 로그를 output.log에 누적(>>)해서 기록하며 백그라운드 실행
-            nohup java -jar /home/ubuntu/app/app.jar >> /home/ubuntu/logs/output.log 2>&1 &
+            DB_PASSWORD=$DB_PASSWORD nohup java -jar /home/ubuntu/app/app.jar >> /home/ubuntu/logs/output.log 2>&1 &
 
             # 4. 배포 성공 여부 확인 (3초 대기 후 프로세스 체크)
             sleep 3
