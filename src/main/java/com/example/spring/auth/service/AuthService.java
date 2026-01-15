@@ -4,13 +4,10 @@ import com.example.spring.user.domain.Role;
 import com.example.spring.user.domain.User;
 import com.example.spring.auth.dto.JwtToken;
 import com.example.spring.auth.dto.LoginResponse;
-import com.example.spring.oauth.dto.KakaoTokenResponse;
-import com.example.spring.oauth.dto.KakaoUserInfo;
 import com.example.spring.common.exception.InvalidTokenException;
 import com.example.spring.common.exception.UserNotFoundException;
 import com.example.spring.user.repository.UserRepository;
 import com.example.spring.auth.security.JwtTokenProvider;
-import com.example.spring.oauth.service.KakaoOAuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,35 +18,30 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final KakaoOAuthService kakaoOAuthService;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
 
     /**
-     * 카카오 OAuth 로그인 및 회원가입
+     * 간단한 Mock 로그인 (프로토타입용)
+     * username으로 사용자를 찾고, 없으면 자동 생성
      */
     @Transactional
-    public LoginResponse login(String authorizationCode, Role role) {
-        // 1. 카카오 인증 코드로 액세스 토큰 요청
-        KakaoTokenResponse kakaoToken = kakaoOAuthService.getAccessToken(authorizationCode);
-
-        // 2. 카카오 액세스 토큰으로 사용자 정보 조회
-        KakaoUserInfo kakaoUserInfo = kakaoOAuthService.getUserInfo(kakaoToken.accessToken());
-
-        // 3. 사용자 조회 또는 생성
-        User user = userRepository.findByKakaoId(kakaoUserInfo.getKakaoIdAsString())
-                .orElseGet(() -> createUser(kakaoUserInfo, role));
+    public LoginResponse login(String username, Role role) {
+        // 1. 사용자 조회 또는 생성 (kakaoId 필드를 username으로 사용)
+        User user = userRepository.findByKakaoId(username)
+                .orElseGet(() -> createUser(username, role));
 
         boolean isNewUser = user.getRefreshToken() == null;
 
-        // 4. JWT 토큰 생성
+        // 2. JWT 토큰 생성
         JwtToken jwtToken = generateJwtToken(user);
 
-        // 5. Refresh Token 저장
+        // 3. Refresh Token 저장
         user.updateRefreshToken(jwtToken.refreshToken());
         userRepository.save(user);
 
-        log.info("User logged in successfully. userId: {}, isNewUser: {}", user.getId(), isNewUser);
+        log.info("User logged in successfully. userId: {}, username: {}, isNewUser: {}",
+                user.getId(), username, isNewUser);
 
         return LoginResponse.of(
                 user.getId(),
@@ -104,20 +96,20 @@ public class AuthService {
     }
 
     /**
-     * 사용자 생성
+     * Mock 사용자 생성 (프로토타입용)
      */
-    private User createUser(KakaoUserInfo kakaoUserInfo, Role role) {
+    private User createUser(String username, Role role) {
         User newUser = User.builder()
-                .kakaoId(kakaoUserInfo.getKakaoIdAsString())
-                .email(kakaoUserInfo.getEmail())
-                .nickname(kakaoUserInfo.getNickname())
-                .profileImageUrl(kakaoUserInfo.getProfileImageUrl())
+                .kakaoId(username)  // kakaoId 필드를 username으로 사용
+                .email(username + "@example.com")
+                .nickname(username)
+                .profileImageUrl("https://via.placeholder.com/150")
                 .role(role)
                 .build();
 
         User savedUser = userRepository.save(newUser);
-        log.info("New user created. userId: {}, kakaoId: {}, role: {}",
-                savedUser.getId(), savedUser.getKakaoId(), savedUser.getRole());
+        log.info("New user created. userId: {}, username: {}, role: {}",
+                savedUser.getId(), username, savedUser.getRole());
 
         return savedUser;
     }

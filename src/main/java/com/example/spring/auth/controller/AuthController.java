@@ -23,15 +23,14 @@ public class AuthController {
     private final AuthService authService;
 
     /**
-     * 카카오 로그인
+     * 간단한 Mock 로그인 (프로토타입용)
      * POST /api/auth/login
-     * POST /api/auth/kakao/login (alias)
      */
-    @PostMapping({"/login", "/kakao/login"})
+    @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
-        log.info("Login request received. role: {}", request.role());
+        log.info("Login request received. username: {}, role: {}", request.username(), request.role());
 
-        LoginResponse response = authService.login(request.code(), request.role());
+        LoginResponse response = authService.login(request.username(), request.role());
 
         String message = response.isNewUser() ? "회원가입 및 로그인 성공" : "로그인 성공";
         return ResponseEntity.ok(ApiResponse.success(response, message));
