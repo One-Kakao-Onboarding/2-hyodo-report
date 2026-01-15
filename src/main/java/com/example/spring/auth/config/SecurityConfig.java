@@ -37,11 +37,12 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // 요청 권한 설정 (컨트롤러 추가 후 세부 설정 필요)
+                // 요청 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/oauth/**",
+                                "/api/analysis/**",  // AI 분석 API는 인증 불필요
                                 "/health",
                                 "/actuator/**"
                         ).permitAll()
