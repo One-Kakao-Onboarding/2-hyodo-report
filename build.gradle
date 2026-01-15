@@ -33,6 +33,17 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+	// JWT
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+	// HTTP Client for Kakao API
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
 	runtimeOnly 'org.postgresql:postgresql'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
@@ -40,6 +51,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-thymeleaf-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
